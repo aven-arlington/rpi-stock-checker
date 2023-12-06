@@ -1,0 +1,20 @@
+[package]
+name = "rpi-stock-checker"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "*"
+
+[dependencies.windows]
+version = "*"
+features = [
+   "Foundation_Collections",
+   "Web_Syndication",
+   "Win32_Foundation",
+   "Win32_UI_WindowsAndMessaging",
+   "UI_Notifications",
+   "Data_Xml_Dom",
+]
