@@ -9,6 +9,7 @@ description = "A simple RSS stock checker for the Raspberry Pi 5"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ctrlc = "*"
 chrono = "*"
 
 [dependencies.windows]
