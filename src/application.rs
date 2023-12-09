@@ -6,7 +6,7 @@ use windows::{
     core::*,
     Data::Xml::Dom::{IXmlNode, XmlDocument, XmlText},
     Foundation::{Collections::IVector, Uri},
-    Web::Syndication::{SyndicationClient, SyndicationItem},
+    Web::Syndication::{SyndicationClient, SyndicationFeed, SyndicationItem},
     UI::Notifications::{ToastNotification, ToastNotificationManager, ToastTemplateType},
 };
 
@@ -32,17 +32,13 @@ pub fn run() -> Result<()> {
             h!("Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)"),
         )?;
 
-        match check_feed(&client) {
-            Ok(new_feeds) => {
+        match check_syndication(&client) {
+            Ok(syndication) => {
+                let new_feeds = remove_duplicates(parse_syndication(syndication), &mut prev_feeds);
                 for feed in new_feeds {
-                    if !prev_feeds.contains(&feed) {
-                        // New feed found
-                        let now = Local::now();
-                        println!("{} - {}", now.format("%Y-%m-%d %H:%M:%S"), feed);
+                    if feed.contains(SEARCH_STRING) {
+                        // Stock found
                         notify(&feed).expect("Failed to send notification");
-                        prev_feeds.insert(feed);
-                    } else {
-                        continue;
                     }
                     // Allow time for async toast creation to complete
                     thread::sleep(Duration::from_millis(500));
@@ -60,15 +56,31 @@ pub fn run() -> Result<()> {
     }
 }
 
-fn check_feed(client: &SyndicationClient) -> Result<Vec<String>> {
+fn check_syndication(client: &SyndicationClient) -> Result<SyndicationFeed> {
     let uri = Uri::CreateUri(h!("https://rpilocator.com/feed"))?;
-    let feed = client.RetrieveFeedAsync(&uri)?.get()?;
-    let feed_items: IVector<SyndicationItem> = feed.Items()?;
-    let mut output_strings: Vec<String> = Vec::new();
-    for item in feed_items {
-        output_strings.push(item.Title().ok().unwrap().Text().ok().unwrap().to_string());
+    client.RetrieveFeedAsync(&uri)?.get()
+}
+
+fn parse_syndication(syndication_feed: SyndicationFeed) -> Vec<String> {
+    let feed_items: IVector<SyndicationItem> = syndication_feed.Items().unwrap();
+
+    feed_items
+        .into_iter()
+        .map(|item| item.Title().unwrap().Text().unwrap().to_string())
+        .collect::<Vec<String>>()
+}
+
+fn remove_duplicates(incoming_feeds: Vec<String>, prev_feeds: &mut HashSet<String>) -> Vec<String> {
+    let mut new_feeds: Vec<String> = Vec::new();
+    let now = Local::now();
+    for item in incoming_feeds {
+        if !prev_feeds.contains(&item) {
+            println!("{} - {}", now.format("%Y-%m-%d %H:%M:%S"), item);
+            new_feeds.push(item.clone());
+            prev_feeds.insert(item.clone());
+        }
     }
-    Ok(output_strings)
+    new_feeds
 }
 
 fn notify(feed: &String) -> Result<()> {
@@ -89,5 +101,14 @@ fn notify(feed: &String) -> Result<()> {
             .Show(&notification)?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
 }
 
