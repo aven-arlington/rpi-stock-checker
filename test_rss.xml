@@ -1,0 +1,16 @@
+<rss xmlns:taxo="http://purl.org/rss/1.0/modules/taxonomy/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+	<channel>
+		<title>Mock Channel Title</title>
+      <link>https://mockchannellink.com
+      <description>Mock Channel Description</description>
+      <lastbuilddate>Fri, 08 Dec 2023 01:00:00 GMT</lastbuilddate>
+      
+      <item>
+         <title>Mock Item Title</title>
+         <description>Mock Item Description.</description>
+         <link>https://mockitemlink.com
+         <guid ispermalink="false">846c1690-b4ad-479a-95e3-2ca5ed4dfdbd</guid>
+         <pubdate>Fri, 08 Dec 2023 01:00:00 GMT</pubdate>
+      </item>
+   </channel>
+</rss>

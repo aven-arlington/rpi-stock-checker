@@ -24,14 +24,13 @@ pub fn run() -> Result<()> {
     // Setup the RSS feed reader
     let mut prev_feeds: HashSet<String> = HashSet::new();
     let client = SyndicationClient::new()?;
+    client.SetRequestHeader(
+        h!("User-Agent"),
+        h!("Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)"),
+    )?;
 
     loop {
         // Get available feeds
-        client.SetRequestHeader(
-            h!("User-Agent"),
-            h!("Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)"),
-        )?;
-
         match check_syndication(&client) {
             Ok(syndication) => {
                 let new_feeds = remove_duplicates(parse_syndication(syndication), &mut prev_feeds);
@@ -105,10 +104,19 @@ fn notify(feed: &String) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
+    fn verify_parse_syndication() {
+        let mock_uri = Uri::CreateUri(h!("https://mock_url.com")).unwrap();
+        let mock_feed = SyndicationFeed::CreateSyndicationFeed(
+            &HSTRING::from("Mock Title"),
+            &HSTRING::from("Mock Subtitle"),
+            &mock_uri,
+        )
+        .unwrap();
+        let output = parse_syndication(mock_feed);
+        assert_eq!(output.len(), 1);
     }
 }
 
