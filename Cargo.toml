@@ -17,7 +17,6 @@ version = "*"
 features = [
    "Foundation_Collections",
    "Web_Syndication",
-   "Win32_Foundation",
    "UI_Notifications",
    "Data_Xml_Dom",
 ]
