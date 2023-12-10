@@ -106,52 +106,51 @@ fn notify(feed: &String) -> Result<()> {
 mod tests {
     use super::*;
     use windows::Data::Xml::Dom::XmlLoadSettings;
-    pub struct XmlString {
-        xml_doc: XmlDocument,
+    pub struct XmlDoc {
+        mock_xml: XmlDocument,
     }
 
-    impl Default for XmlString {
+    impl Default for XmlDoc {
         fn default() -> Self {
-            let mut xml_header =
-                String::from("<?xml version=\"1.0\" encoding=\"UTF-8\" ?><rss version=\"2.0\">");
-            let xml_channel = String::from(
-                "<channel>\
-                    <title>Mock Channel Title</title>\
-                    <link>https://mockchannellink.com</link>\
-                    <description>Mock Channel Description</description>\
-                    <lastbuilddate>Fri, 08 Dec 2023 01:00:00 GMT</lastbuilddate>",
+            let xml = String::from(
+                "\
+                <?xml version=\"1.0\" encoding=\"UTF-8\" ?><rss version=\"2.0\">\
+                    <channel>\
+                        <title>Mock Channel Title</title>\
+                        <link>https://mockchannellink.com</link>\
+                        <description>Mock Channel Description</description>\
+                        <lastbuilddate>Fri, 08 Dec 2023 01:00:00 GMT</lastbuilddate>\
+                        <item>\
+                            <title>Mock Item Title</title>\
+                            <description>Mock Item Description.</description>\
+                            <link>https://mockitemlink.com</link>\
+                            <guid ispermalink=\"false\">846c1690-b4ad-479a-95e3-2ca5ed4dfdbd</guid>\
+                            <pubdate>Fri, 08 Dec 2023 01:00:00 GMT</pubdate>\
+                        </item>\
+                    </channel>\
+                </rss>\
+                ",
             );
-            let xml_item = String::from(
-                "<item>\
-                    <title>Mock Item Title</title>\
-                    <description>Mock Item Description.</description>\
-                    <link>https://mockitemlink.com</link>\
-                    <guid ispermalink=\"false\">846c1690-b4ad-479a-95e3-2ca5ed4dfdbd</guid>\
-                    <pubdate>Fri, 08 Dec 2023 01:00:00 GMT</pubdate>",
-            );
-            let xml_footer = String::from("</item></channel></rss>");
-            xml_header.push_str(&xml_channel);
-            xml_header.push_str(&xml_item);
-            xml_header.push_str(&xml_footer);
 
             let xml_opts = XmlLoadSettings::new().expect("Opts creation failed");
             xml_opts
                 .SetValidateOnParse(true)
-                .expect("Set validate failed");
+                .expect("Set validate option failed");
 
-            let xml_doc: XmlDocument = XmlDocument::new().expect("New xml doc failed");
-            match xml_doc.LoadXmlWithSettings(&HSTRING::from(xml_header), &xml_opts) {
+            let mock_xml: XmlDocument = XmlDocument::new().expect("New XmlDoc::new failed");
+            match mock_xml.LoadXmlWithSettings(&HSTRING::from(xml), &xml_opts) {
                 Ok(doc) => doc,
                 Err(e) => {
-                    println!("Error: {}", e.code());
+                    println!("LoadXml failed: {}", e.code());
                 }
             };
-            Self { xml_doc }
+            Self { mock_xml }
         }
     }
+
     #[test]
     fn verify_parse_syndication() {
-        let xml_doc = XmlString::default().xml_doc;
+        let xml_doc = XmlDoc::default().mock_xml;
 
         let mock_feed = SyndicationFeed::new().expect("New SyndicationFeed failed");
         mock_feed
